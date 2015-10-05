@@ -75,6 +75,8 @@ public class ChatBubbleRenderer extends javax.swing.JPanel implements ListCellRe
             Image img = chatBubble.getAvatar().getImage();
             ImageIcon avatar = new ImageIcon(img.getScaledInstance(55, 55, Image.SCALE_SMOOTH));
             lblAvatar.setIcon(avatar);
+        } else {
+            lblAvatar.setIcon(null);
         }
         txaMsg.setText(chatBubble.getContent());
         setBackground(chatBubble.getColor());

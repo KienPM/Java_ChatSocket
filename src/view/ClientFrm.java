@@ -39,6 +39,7 @@ public class ClientFrm extends javax.swing.JFrame {
         listOnlineUsers = new javax.swing.JList();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
 
         lblAvatar.setText("avatar");
 

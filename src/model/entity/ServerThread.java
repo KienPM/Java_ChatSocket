@@ -151,7 +151,7 @@ public class ServerThread extends Thread {
                 break;
             }
         }
-        Server.updateOnlineUsers();
+        Server.noticeDisconnet(username);
     }
 
     public void onMessageToOne(Object content) {

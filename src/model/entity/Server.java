@@ -53,5 +53,11 @@ public class Server extends Thread {
             serverThreads.get(key).sendMessage(msg);
         }
     }
-
+    
+    public static void noticeDisconnet(String username) {
+        Message msg = new Message(Constant.DISCONNECT, username);
+        for (String key : serverThreads.keySet()) {
+            serverThreads.get(key).sendMessage(msg);
+        }
+    }
 }

@@ -26,4 +26,5 @@ public class Constant {
     public static final String MESSAGE_TO_ONE = "MESSAGE_TO_ONE";
     public static final String COME_MESSAGE = "COME_MESSAGE";
     public static final String UPDATE_ONLINE_USERS = "UPDATE_ONLINE_USERS";
+    public static final String DISCONNECT = "DISCONNECT";
 }

@@ -32,6 +32,7 @@ public class ChatFrm extends javax.swing.JFrame {
         model = new DefaultListModel<>();
         listMessages.setModel(model);
         listMessages.setCellRenderer(new ChatBubbleRenderer());
+        txtChatInput.requestFocus();
         setLocationRelativeTo(null);
     }
 
@@ -61,6 +62,7 @@ public class ChatFrm extends javax.swing.JFrame {
         btnSend = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
 
         listMessages.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         scrListMessages.setViewportView(listMessages);

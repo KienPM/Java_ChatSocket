@@ -5,10 +5,12 @@
  */
 package model.entity;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,7 +25,9 @@ public class Client {
     private final ObjectOutputStream oos;
 
     public Client() throws IOException {
-        socket = new Socket("localhost", Constant.PORT);
+        Scanner scanner = new Scanner(new FileInputStream("host.config"));
+        String host = scanner.nextLine().trim();
+        socket = new Socket(host, Constant.PORT);
         oos = new ObjectOutputStream(socket.getOutputStream());
         ois = new ObjectInputStream(socket.getInputStream());
     }

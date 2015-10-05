@@ -6,6 +6,9 @@
 package control;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -13,8 +16,13 @@ import java.io.IOException;
  */
 public class RunClient {
 
-    public static void main(String[] args) throws IOException {
-        ClientCtrl clientCtrl = new ClientCtrl();
-        clientCtrl.start();
+    public static void main(String[] args){
+        try {
+            ClientCtrl clientCtrl = new ClientCtrl();
+            clientCtrl.start();
+        } catch (IOException ex) {
+            Logger.getLogger(RunClient.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(null, "Error! Can't connect to server!");
+        }
     }
 }

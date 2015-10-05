@@ -61,7 +61,7 @@ public class ClientCtrl extends Thread {
         while (true) {
             try {
                 Message msgFromServer = client.receiveMessage();
-//                System.out.println(msgFromServer.getStatus());
+                System.out.println(msgFromServer.getStatus() + "/" + msgFromServer.getContent());
                 switch (msgFromServer.getStatus()) {
                     case Constant.SIGNUP_SUCCESS:
                         onSignupSuscess(msgFromServer.getContent());
@@ -81,6 +81,9 @@ public class ClientCtrl extends Thread {
                         break;
                     case Constant.UPDATE_ONLINE_USERS:
                         onUpdateOnlineUsers(msgFromServer.getContent());
+                        break;
+                    case Constant.DISCONNECT:
+                        onUserDisconnect(msgFromServer.getContent());
                         break;
                 }
             } catch (IOException | ClassNotFoundException ex) {
@@ -164,6 +167,20 @@ public class ClientCtrl extends Thread {
         loadOnlineUserList();
     }
 
+    public void onUserDisconnect(Object content) {
+        String username = content.toString();
+        if (chatWindows.containsKey(username)) {
+            chatWindows.get(username).appendMsg(new ChatBubble(null, username + " is offline!", Color.RED));
+            chatWindows.remove(username);
+        }
+        for (int i = 0; i < onlineUsers.size(); ++i) {
+            if (username.equalsIgnoreCase(onlineUsers.get(i).getUsername())) {
+                onlineUsers.remove(i);
+            }
+        }
+        loadOnlineUserList();
+    }
+
     public void onClickLogin() {
         String username = loginFrm.getTxtUsername().getText();
         String password = loginFrm.getTxtPassword().getText();
@@ -199,7 +216,7 @@ public class ClientCtrl extends Thread {
             JOptionPane.showMessageDialog(loginFrm, "Something wrong! Please try again!");
         }
     }
-    
+
     public void onClickLogout() {
         try {
             client.sendMessage(new Message(Constant.LOGOUT, user.getUsername()));
