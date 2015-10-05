@@ -24,6 +24,7 @@ import model.entity.User;
  * @author Ken
  */
 public class UserDAO {
+
     private final Connection conn;
 
     public UserDAO() throws Exception {
@@ -33,9 +34,9 @@ public class UserDAO {
     public UserDAO(Connection conn) {
         this.conn = conn;
     }
-    
+
     public int addUser(User user) throws SQLException {
-        String sql  = "SELECT * FROM `chatsocketdb`.`user` WHERE `username`=?";
+        String sql = "SELECT * FROM `chatsocketdb`.`user` WHERE `username`=?";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setString(1, user.getUsername());
         ResultSet rs = ps.executeQuery();
@@ -50,7 +51,7 @@ public class UserDAO {
         ps.setString(3, Constant.DEFAULT_AVATAR);
         return ps.executeUpdate();
     }
-    
+
     public User checkLogin(String username, String password) throws SQLException {
         User user = null;
         String sql = "SELECT * FROM `chatsocketdb`.`user` WHERE username=? AND password=?";
@@ -59,14 +60,17 @@ public class UserDAO {
         ps.setString(2, password);
         ResultSet rs = ps.executeQuery();
         if (rs.next()) {
-            String avatarURL = rs.getString("avatar_url");
-            Image avatar = null;
-            try {
-                avatar = ImageIO.read(new File(avatarURL));
-            } catch (IOException ex) {
-                Logger.getLogger(UserDAO.class.getName()).log(Level.SEVERE, null, ex);
+            String pass = rs.getString("password");
+            if (pass.equals(password)) {
+                String avatarURL = rs.getString("avatar_url");
+                Image avatar = null;
+                try {
+                    avatar = ImageIO.read(new File(avatarURL));
+                } catch (IOException ex) {
+                    Logger.getLogger(UserDAO.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                user = new User(username, password, new ImageIcon(avatar));
             }
-            user = new User(username, password, new ImageIcon(avatar));
         }
         return user;
     }

@@ -49,7 +49,7 @@ public class Server extends Thread {
         tmp.addAll(onlineUsers);
         Message msg = new Message(Constant.UPDATE_ONLINE_USERS, tmp);
         for (String key : serverThreads.keySet()) {
-            System.out.println("Update for " + key + " " + onlineUsers.size());
+//            System.out.println("Update for " + key + " " + onlineUsers.size());
             serverThreads.get(key).sendMessage(msg);
         }
     }

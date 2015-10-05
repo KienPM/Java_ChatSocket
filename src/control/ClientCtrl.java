@@ -61,7 +61,7 @@ public class ClientCtrl extends Thread {
         while (true) {
             try {
                 Message msgFromServer = client.receiveMessage();
-                System.out.println(msgFromServer.getStatus());
+//                System.out.println(msgFromServer.getStatus());
                 switch (msgFromServer.getStatus()) {
                     case Constant.SIGNUP_SUCCESS:
                         onSignupSuscess(msgFromServer.getContent());
@@ -73,7 +73,7 @@ public class ClientCtrl extends Thread {
                         onLoginSuccess(msgFromServer.getContent());
                         break;
                     case Constant.LOGIN_FAIL:
-                        System.out.println(msgFromServer.getContent().toString());
+//                        System.out.println(msgFromServer.getContent().toString());
                         onSignupFail(msgFromServer.getContent());
                         break;
                     case Constant.COME_MESSAGE:
@@ -100,6 +100,9 @@ public class ClientCtrl extends Thread {
     }
 
     private void addClientFrmListener() {
+        clientFrm.getBtnLogout().addActionListener((ActionEvent e) -> {
+            onClickLogout();
+        });
         MouseListener mouseListener;
         mouseListener = new MouseAdapter() {
             @Override
@@ -139,8 +142,6 @@ public class ClientCtrl extends Thread {
 
     public void onComeMessage(Object content) {
         String strContent = content.toString();
-        System.out.println(strContent);
-        System.out.println(chatWindows.size());
         int index = strContent.indexOf("|");
         String from = strContent.substring(0, index);
         String msg = strContent.substring(index + 1);
@@ -150,7 +151,7 @@ public class ClientCtrl extends Thread {
                     msg, Color.CYAN));
         } else {
             for (OnlineUser onlineUser : onlineUsers) {
-                if (from.equals(onlineUser.getUsername())) {
+                if (from.equalsIgnoreCase(onlineUser.getUsername())) {
                     openChatWindow(onlineUser, msg);
                 }
             }
@@ -159,7 +160,7 @@ public class ClientCtrl extends Thread {
 
     public void onUpdateOnlineUsers(Object content) {
         onlineUsers = (ArrayList<OnlineUser>) content;
-        System.out.println(onlineUsers.size());
+//        System.out.println(onlineUsers.size());
         loadOnlineUserList();
     }
 
@@ -170,7 +171,7 @@ public class ClientCtrl extends Thread {
             JOptionPane.showMessageDialog(loginFrm, "Enter username and password!");
             return;
         }
-        User tmp = new User(username, password);
+        User tmp = new User(username.toLowerCase(), password);
         try {
             client.sendMessage(new Message(Constant.LOGIN, tmp));
         } catch (IOException ex) {
@@ -190,12 +191,29 @@ public class ClientCtrl extends Thread {
             JOptionPane.showMessageDialog(loginFrm, "Username can't contants space or '|'");
             return;
         }
-        User tmp = new User(username, password);
+        User tmp = new User(username.toLowerCase(), password);
         try {
             client.sendMessage(new Message(Constant.SIGNUP, tmp));
         } catch (IOException ex) {
             Logger.getLogger(ClientCtrl.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(loginFrm, "Something wrong! Please try again!");
+        }
+    }
+    
+    public void onClickLogout() {
+        try {
+            client.sendMessage(new Message(Constant.LOGOUT, user.getUsername()));
+            clientFrm.dispose();
+            user = null;
+            for (String key : chatWindows.keySet()) {
+                chatWindows.get(key).dispose();
+            }
+            chatWindows.clear();
+            loginFrm.getTxtUsername().setText("");
+            loginFrm.getTxtPassword().setText("");
+            loginFrm.setVisible(true);
+        } catch (IOException ex) {
+            Logger.getLogger(ClientCtrl.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
