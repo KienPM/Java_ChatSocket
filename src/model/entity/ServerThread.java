@@ -25,7 +25,7 @@ import model.dao.UserDAO;
  * @author Ken
  */
 public class ServerThread extends Thread {
-
+    
     private final Socket clientSocket;
     private final ObjectInputStream ois;
     private final ObjectOutputStream oos;
@@ -42,7 +42,7 @@ public class ServerThread extends Thread {
         oos = new ObjectOutputStream(clientSocket.getOutputStream());
         conn = MySQLConnector.getConnection(Constant.DB_NAME);
     }
-
+    
     @Override
     public void run() {
         User user = null;
@@ -78,7 +78,7 @@ public class ServerThread extends Thread {
             }
         }
     }
-
+    
     public void onSignup(User user) {
         UserDAO userDAO = new UserDAO(conn);
         Message msg = null;
@@ -95,7 +95,7 @@ public class ServerThread extends Thread {
                 } catch (IOException ex) {
                     Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
                 }
-
+                
                 user.setAvatar(avatar);
                 Server.serverThreads.put(user.getUsername(), this);
                 Server.onlineUsers.add(new OnlineUser(user.getUsername(), avatar));
@@ -113,7 +113,7 @@ public class ServerThread extends Thread {
             }
         }
     }
-
+    
     public void onLogin(User user) {
         UserDAO userDAO = new UserDAO(conn);
         Message msg = null;
@@ -138,7 +138,7 @@ public class ServerThread extends Thread {
             }
         }
     }
-
+    
     public void onLogout(String username) {
         Server.serverThreads.remove(username);
         for (OnlineUser onlineUser : Server.onlineUsers) {
@@ -149,11 +149,17 @@ public class ServerThread extends Thread {
         }
         Server.updateOnlineUsers();
     }
-
+    
     public void onMessageToOne(Object content) {
-
+        String strContent = content.toString();
+        int index = strContent.indexOf("|");
+        String to = strContent.substring(0, index);
+        String subContent = strContent.substring(index + 1);
+        if (Server.serverThreads.containsKey(to)) {
+            Server.serverThreads.get(to).sendMessage(new Message(Constant.COME_MESSAGE, subContent));
+        }
     }
-
+    
     public void sendMessage(Message msg) {
         try {
             oos.writeObject(msg);

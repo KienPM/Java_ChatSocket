@@ -45,8 +45,12 @@ public class Server extends Thread {
     }
     
     public static void updateOnlineUsers() {
+        ArrayList<OnlineUser> tmp = new ArrayList<>();
+        tmp.addAll(onlineUsers);
+        Message msg = new Message(Constant.UPDATE_ONLINE_USERS, tmp);
         for (String key : serverThreads.keySet()) {
-            serverThreads.get(key).sendMessage(new Message(Constant.UPDATE_ONLINE_USERS, onlineUsers));
+            System.out.println("Update for " + key + " " + onlineUsers.size());
+            serverThreads.get(key).sendMessage(msg);
         }
     }
 

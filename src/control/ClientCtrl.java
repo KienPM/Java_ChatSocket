@@ -5,24 +5,30 @@
  */
 package control;
 
+import java.awt.Color;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import model.entity.ChatBubble;
 import model.entity.Client;
 import model.entity.Constant;
 import model.entity.Message;
 import model.entity.OnlineUser;
 import model.entity.User;
+import view.ChatFrm;
 import view.ClientFrm;
 import view.LoginFrm;
 import view.OnlineUserRenderer;
@@ -38,6 +44,7 @@ public class ClientCtrl extends Thread {
     private ArrayList<OnlineUser> onlineUsers;
     private final Client client;
     private User user = null;
+    private HashMap<String, ChatFrm> chatWindows;
 
     public ClientCtrl() throws IOException {
         client = new Client();
@@ -46,6 +53,7 @@ public class ClientCtrl extends Thread {
         addLoginFrmListener();
         loginFrm.setVisible(true);
         onlineUsers = new ArrayList<>();
+        chatWindows = new HashMap<>();
     }
 
     @Override
@@ -65,6 +73,7 @@ public class ClientCtrl extends Thread {
                         onLoginSuccess(msgFromServer.getContent());
                         break;
                     case Constant.LOGIN_FAIL:
+                        System.out.println(msgFromServer.getContent().toString());
                         onSignupFail(msgFromServer.getContent());
                         break;
                     case Constant.COME_MESSAGE:
@@ -100,7 +109,7 @@ public class ClientCtrl extends Thread {
                     int index = theList.locationToIndex(mouseEvent.getPoint());
                     if (index >= 0) {
                         OnlineUser onlineUser = (OnlineUser) theList.getModel().getElementAt(index);
-                        JOptionPane.showMessageDialog(clientFrm, onlineUser.getUsername());
+                        openChatWindow(onlineUser);
                     }
                 }
             }
@@ -129,7 +138,23 @@ public class ClientCtrl extends Thread {
     }
 
     public void onComeMessage(Object content) {
-
+        String strContent = content.toString();
+        System.out.println(strContent);
+        System.out.println(chatWindows.size());
+        int index = strContent.indexOf("|");
+        String from = strContent.substring(0, index);
+        String msg = strContent.substring(index + 1);
+        if (chatWindows.containsKey(from)) {
+            ImageIcon avatar = chatWindows.get(from).getAvatar();
+            chatWindows.get(from).appendMsg(new ChatBubble(avatar,
+                    msg, Color.CYAN));
+        } else {
+            for (OnlineUser onlineUser : onlineUsers) {
+                if (from.equals(onlineUser.getUsername())) {
+                    openChatWindow(onlineUser, msg);
+                }
+            }
+        }
     }
 
     public void onUpdateOnlineUsers(Object content) {
@@ -190,9 +215,69 @@ public class ClientCtrl extends Thread {
         DefaultListModel<OnlineUser> model = new DefaultListModel<>();
         model.clear();
         for (OnlineUser onlineUser : onlineUsers) {
-            model.addElement(onlineUser);
+            if (!onlineUser.getUsername().equalsIgnoreCase(user.getUsername())) {
+                model.addElement(onlineUser);
+            }
         }
         clientFrm.getListOnlineUsers().setModel(model);
         clientFrm.getListOnlineUsers().setCellRenderer(new OnlineUserRenderer());
+    }
+
+    public void openChatWindow(OnlineUser chatWith, String msg) {
+        ChatFrm chatFrm = new ChatFrm(chatWith);
+        chatWindows.put(chatWith.getUsername(), chatFrm);
+        chatFrm.appendMsg(new ChatBubble(chatWith.getAvatar(), msg, Color.CYAN));
+        chatFrm.getBtnSend().addActionListener((ActionEvent e) -> {
+            String content = chatFrm.getChatInput();
+            if (!content.equals("")) {
+                chatFrm.resetChatInput();
+                String str = content.substring(content.indexOf("|") + 1);
+                chatFrm.appendMsg(new ChatBubble(user.getAvatar(), str, Color.LIGHT_GRAY));
+                content = chatWith.getUsername() + "|" + user.getUsername() + "|" + str;
+                try {
+                    client.sendMessage(new Message(Constant.MESSAGE_TO_ONE, content));
+                } catch (IOException ex) {
+                    Logger.getLogger(ClientCtrl.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        chatFrm.addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                chatWindows.remove(chatWith.getUsername());
+                super.windowClosing(e);
+            }
+
+        });
+        chatFrm.setVisible(true);
+    }
+
+    public void openChatWindow(OnlineUser chatWith) {
+        ChatFrm chatFrm = new ChatFrm(chatWith);
+        chatWindows.put(chatWith.getUsername(), chatFrm);
+        chatFrm.getBtnSend().addActionListener((ActionEvent e) -> {
+            String content = chatFrm.getChatInput();
+            if (!content.equals("")) {
+                chatFrm.resetChatInput();
+                chatFrm.appendMsg(new ChatBubble(user.getAvatar(), content, Color.LIGHT_GRAY));
+                content = chatWith.getUsername() + "|" + user.getUsername() + "|" + content.trim();
+                try {
+                    client.sendMessage(new Message(Constant.MESSAGE_TO_ONE, content));
+                } catch (IOException ex) {
+                    Logger.getLogger(ClientCtrl.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        chatFrm.addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                chatWindows.remove(chatWith.getUsername());
+                super.windowClosing(e);
+            }
+
+        });
+        chatFrm.setVisible(true);
     }
 }

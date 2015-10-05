@@ -5,30 +5,24 @@
  */
 package view;
 
-import java.awt.Color;
+import java.awt.Component;
 import java.awt.Image;
 import javax.swing.ImageIcon;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import model.entity.ChatBubble;
 
 /**
  *
  * @author Ken
  */
-public class ChatBubble extends javax.swing.JPanel {
+public class ChatBubbleRenderer extends javax.swing.JPanel implements ListCellRenderer<ChatBubble> {
 
     /**
      * Creates new form ChatBubble
      */
-    public ChatBubble() {
+    public ChatBubbleRenderer() {
         initComponents();
-    }
-    
-    public ChatBubble(Image avatar, String msg, Color background) {
-        setBackground(background);
-        initComponents();
-        ImageIcon icon = new ImageIcon(avatar.getScaledInstance(55, 55, Image.SCALE_SMOOTH));
-        lblAvatar.setIcon(icon);
-        txaMsg.setText(msg);
-        txaMsg.setBackground(background);
     }
 
     /**
@@ -42,6 +36,8 @@ public class ChatBubble extends javax.swing.JPanel {
 
         lblAvatar = new javax.swing.JLabel();
         txaMsg = new javax.swing.JTextArea();
+
+        setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 51, 255)));
 
         lblAvatar.setMaximumSize(new java.awt.Dimension(50, 50));
         lblAvatar.setMinimumSize(new java.awt.Dimension(50, 50));
@@ -62,7 +58,7 @@ public class ChatBubble extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(lblAvatar, javax.swing.GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE)
+            .addComponent(lblAvatar, javax.swing.GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE)
             .addComponent(txaMsg, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -72,4 +68,17 @@ public class ChatBubble extends javax.swing.JPanel {
     private javax.swing.JLabel lblAvatar;
     private javax.swing.JTextArea txaMsg;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public Component getListCellRendererComponent(JList<? extends ChatBubble> list, ChatBubble chatBubble, int index, boolean isSelected, boolean cellHasFocus) {
+        if (chatBubble.getAvatar() != null) {
+            Image img = chatBubble.getAvatar().getImage();
+            ImageIcon avatar = new ImageIcon(img.getScaledInstance(55, 55, Image.SCALE_SMOOTH));
+            lblAvatar.setIcon(avatar);
+        }
+        txaMsg.setText(chatBubble.getContent());
+        setBackground(chatBubble.getColor());
+        txaMsg.setBackground(chatBubble.getColor());
+        return this;
+    }
 }
